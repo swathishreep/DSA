@@ -1,0 +1,19 @@
+ #include<stdio.h>
+ intmain() {
+ //Variabletostoretheageofthecandidate
+ intage;
+ //Prompttheusertoenterthecandidate'sage
+ printf("Enteryourage: ");
+ //Readtheinputagefromtheuser
+ scanf("%d",&age);
+ //Checkifthecandidateiseligibletovote
+ if(age>=18) {
+ //Candidateiseligibletovote
+ printf("Congratulations!Youareeligibleforcastingyourvote.\n");
+ }else{
+ //Candidateisnoteligibletovote
+ printf("Youarenoteligibleforcastingyourvote.\n");
+ }
+ return0;
+ }
+ 
