@@ -1,0 +1,159 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the structure for a key-value pair node
+typedef struct Node {
+    char *key;
+    int value;
+    struct Node *next;
+} Node;
+
+// Define the structure for the hash table
+typedef struct {
+    int size;
+    int capacity;
+    float load_factor_threshold;
+    Node **buckets;
+} HashTable;
+
+// Function to create a new node
+Node *create_node(const char *key, int value) {
+    Node *new_node = (Node *)malloc(sizeof(Node));
+    if (new_node == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+    new_node->key = strdup(key);
+    new_node->value = value;
+    new_node->next = NULL;
+    return new_node;
+}
+
+// Function to create a new hash table
+HashTable *create_hash_table(int initial_capacity, float load_factor_threshold) {
+    HashTable *hash_table = (HashTable *)malloc(sizeof(HashTable));
+    if (hash_table == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+    hash_table->size = 0;
+    hash_table->capacity = initial_capacity;
+    hash_table->load_factor_threshold = load_factor_threshold;
+    hash_table->buckets = (Node **)calloc(initial_capacity, sizeof(Node *));
+    if (hash_table->buckets == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+    return hash_table;
+}
+
+// Function to calculate hash value
+int hash_function(const char *key, int capacity) {
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *key++))
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    return hash % capacity;
+}
+
+// Function to insert key-value pair into hash table
+void insert(HashTable *hash_table, const char *key, int value) {
+    int index = hash_function(key, hash_table->capacity);
+    Node *new_node = create_node(key, value);
+
+    if (hash_table->buckets[index] == NULL) {
+        hash_table->buckets[index] = new_node;
+    } else {
+        Node *current = hash_table->buckets[index];
+        while (current->next != NULL) {
+            if (strcmp(current->key, key) == 0) {
+                // Update value if key already exists
+                current->value = value;
+                free(new_node->key);
+                free(new_node);
+                return;
+            }
+            current = current->next;
+        }
+        current->next = new_node;
+    }
+    hash_table->size++;
+
+    // Check load factor and rehash if necessary
+    if ((float)hash_table->size / hash_table->capacity > hash_table->load_factor_threshold) {
+        rehash(hash_table);
+    }
+}
+
+// Function to retrieve value from hash table given key
+int get(HashTable *hash_table, const char *key) {
+    int index = hash_function(key, hash_table->capacity);
+    Node *current = hash_table->buckets[index];
+    
+    while (current != NULL) {
+        if (strcmp(current->key, key) == 0) {
+            return current->value;
+        }
+        current = current->next;
+    }
+    fprintf(stderr, "Key '%s' not found\n", key);
+    exit(EXIT_FAILURE);
+}
+
+// Function to rehash the hash table
+void rehash(HashTable *hash_table) {
+    int new_capacity = hash_table->capacity * 2;
+    Node **new_buckets = (Node **)calloc(new_capacity, sizeof(Node *));
+    if (new_buckets == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < hash_table->capacity; i++) {
+        Node *current = hash_table->buckets[i];
+        while (current != NULL) {
+            Node *next = current->next;
+            int new_index = hash_function(current->key, new_capacity);
+            current->next = new_buckets[new_index];
+            new_buckets[new_index] = current;
+            current = next;
+        }
+    }
+
+    free(hash_table->buckets);
+    hash_table->buckets = new_buckets;
+    hash_table->capacity = new_capacity;
+}
+
+// Function to free memory allocated for the hash table
+void free_hash_table(HashTable *hash_table) {
+    for (int i = 0; i < hash_table->capacity; i++) {
+        Node *current = hash_table->buckets[i];
+        while (current != NULL) {
+            Node *temp = current;
+            current = current->next;
+            free(temp->key);
+            free(temp);
+        }
+    }
+    free(hash_table->buckets);
+    free(hash_table);
+}
+
+// Main function for testing the hash table
+int main() {
+    HashTable *hash_table = create_hash_table(10, 0.7);
+
+    insert(hash_table, "John", 25);
+    insert(hash_table, "Jane", 30);
+    insert(hash_table, "Doe", 40);
+    insert(hash_table, "Alice", 35);
+
+    printf("Value for key 'John': %d\n", get(hash_table, "John"));
+    printf("Value for key 'Doe': %d\n", get(hash_table, "Doe"));
+
+    free_hash_table(hash_table);
+    return 0;
+}
+
