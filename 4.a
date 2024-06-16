@@ -1,0 +1,56 @@
+ #include<stdio.h>
+ #include<stdlib.h>
+ #defineMAX100
+ typedefstruct{
+ intitems[MAX];
+ inttop;
+ }Stack;
+ //Functiontoinitializethestack
+ voidinitialize(Stack*s) {
+ s->top=-1;
+ }
+ //Functiontocheckifthestackisempty
+ intisEmpty(Stack*s) {
+ returns->top==-1;
+ }
+ //Functiontocheckifthestackisfull
+ intisFull(Stack*s) {
+ returns->top==MAX-1;
+ }
+ //Functiontoaddanelementtothestack
+ voidpush(Stack*s, intnewItem) {
+ if(isFull(s)) {
+ printf("Stackisfull.Cannotpush%d\n",newItem);
+ return;
+ }
+ s->items[++(s->top)]=newItem;
+ }
+ //Functiontoremoveanelementfromthestack
+ intpop(Stack*s) {
+ if(isEmpty(s)) {
+ printf("Stackisempty.Cannotpop\n");
+ return-1;
+ }
+ returns->items[(s->top)--];
+ }
+ //Functiontogetthetopelementofthestackwithoutremovingit
+ intpeek(Stack*s) {
+ if(isEmpty(s)) {
+ printf("Stackisempty.Cannotpeek\n");
+ return-1;
+ }
+ returns->items[s->top];
+ }
+ int main() {
+ Stack s;
+ initialize(&s);
+ // Demonstrating the usage of the stack
+ push(&s, 10);
+ push(&s, 20);
+ push(&s, 30);
+ push(&s, 40);
+ printf("Top element: %d\n", peek(&s));
+ printf("Popped element: %d\n", pop(&s));
+ printf("Top element after pop: %d\n", peek(&s));
+ return 0;
+ }
